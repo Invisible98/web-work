@@ -687,7 +687,7 @@ export default function AdminDashboard() {
                   <CardTitle className="font-pixel text-sm">Minecraft Server Chat</CardTitle>
                 </CardHeader>
                 <CardContent className="p-0">
-                  <div className="p-4 bg-black/50 max-h-96 overflow-y-auto font-mono text-xs space-y-2">
+                  <div className="p-4 bg-black/80 max-h-96 overflow-y-auto font-mono text-sm space-y-2">
                     {chatMessages.length === 0 ? (
                       <div className="text-center text-muted-foreground py-8">
                         No chat messages yet
@@ -698,24 +698,27 @@ export default function AdminDashboard() {
                         return (
                           <div
                             key={message.id}
-                            className={`flex items-start space-x-2 p-2 hover:bg-white/5 rounded ${
-                              isSystem ? 'bg-secondary/20' : ''
+                            className={`flex items-start space-x-2 p-2 hover:bg-white/10 rounded ${
+                              isSystem ? 'bg-yellow-500/10 border-l-2 border-yellow-500' : ''
                             }`}
                             data-testid={`chat-message-${message.id}`}
                           >
                             <div className={`w-6 h-6 rounded flex items-center justify-center text-xs font-bold flex-shrink-0 ${
-                              isSystem ? 'bg-secondary text-secondary-foreground' :
-                              message.isBot ? 'bg-accent text-accent-foreground' : 'bg-primary text-primary-foreground'
+                              isSystem ? 'bg-yellow-500/20 text-yellow-400' :
+                              message.isBot ? 'bg-blue-500/20 text-blue-400' : 'bg-green-500/20 text-green-400'
                             }`}>
                               {isSystem ? <Server className="h-3 w-3" /> :
                                message.isBot ? <MessageCircle className="h-3 w-3" /> : <User className="h-3 w-3" />}
                             </div>
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center space-x-2 mb-1">
-                                <span className={`font-bold text-xs ${isSystem ? 'text-secondary' : 'text-primary'}`}>
+                                <span className={`font-bold text-sm ${
+                                  isSystem ? 'text-yellow-400' :
+                                  message.isBot ? 'text-blue-400' : 'text-green-400'
+                                }`}>
                                   {message.username}
                                 </span>
-                                <span className="text-muted-foreground text-xs">
+                                <span className="text-gray-500 text-xs">
                                   {new Date(message.timestamp!).toLocaleTimeString([], { 
                                     hour: '2-digit', 
                                     minute: '2-digit',
@@ -723,7 +726,9 @@ export default function AdminDashboard() {
                                   })}
                                 </span>
                               </div>
-                              <p className={`text-xs break-words ${isSystem ? 'text-secondary italic' : 'text-foreground'}`}>
+                              <p className={`text-sm break-words ${
+                                isSystem ? 'text-yellow-200 italic' : 'text-gray-200'
+                              }`}>
                                 {message.content}
                               </p>
                             </div>
