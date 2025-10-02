@@ -114,7 +114,7 @@ export class BotManager extends EventEmitter {
         host: this.serverConfig.ip,
         port: this.serverConfig.port,
         username: botData.name,
-        auth: 'microsoft',
+        auth: 'offline',
       });
 
       // Load pathfinder plugin
