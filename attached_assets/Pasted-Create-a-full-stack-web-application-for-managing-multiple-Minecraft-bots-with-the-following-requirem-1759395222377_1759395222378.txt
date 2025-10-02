@@ -1,0 +1,64 @@
+Create a full-stack web application for managing multiple Minecraft bots with the following requirements:
+
+Tech Stack:
+
+Frontend: React with TypeScript, Vite, Tailwind CSS, shadcn/ui components
+Backend: Node.js with Express, TypeScript
+Real-time: WebSocket for live updates
+Database: PostgreSQL with Drizzle ORM (with in-memory fallback)
+Minecraft: Mineflayer library for bot control
+AI: OpenAI GPT-5 integration for chat commands
+Core Features:
+
+Bot Management:
+
+Spawn multiple bots with auto-generated names (e.g., CraftBot_1234)
+Connect/disconnect individual bots to server tbcraft.cbu.net:25569
+Auto-registration and login with password 12345678P
+Auto-reconnect after 30 seconds on disconnect
+Track bot status (online/offline/connecting), health, uptime, position
+Bot Actions:
+
+Follow player (default: rabbit0009)
+Attack player
+Anti-AFK mode (random jumping every minute)
+Stop current action
+Execute custom commands/chat messages
+Teleport to rabbit0009
+Global Controls:
+
+Apply commands to all online bots simultaneously
+Spawn 10 bots at once
+Stop all bots
+OpenAI Chat Integration:
+
+Listen for messages from user rabbit0009
+Parse commands like "attack [player]", "follow [player]", "stop", "teleport"
+Generate intelligent responses using GPT-5
+Send responses back to Minecraft chat
+Real-time Dashboard:
+
+Live bot list with status indicators
+Control panel for individual and global commands
+Live logs panel with color-coded severity levels
+WebSocket updates for instant UI refresh
+Mobile Support:
+
+Responsive mobile interface with tab navigation
+Touch-optimized controls
+UI Design:
+
+Dark theme with gradient headers
+Minecraft-style buttons with pixel fonts
+Glass-morphism effects
+Status dots (green=online, red=offline, yellow=connecting)
+Real-time statistics display
+Key Implementation Details:
+
+Use EventEmitter pattern for bot state management
+Implement pathfinding with mineflayer-pathfinder plugin
+Store bot instances in a Map with reconnect timers
+WebSocket broadcasting for all state changes
+Type-safe schemas shared between frontend and backend using Zod
+Port 5000 for the web server (already configured)
+Make it production-ready with proper error handling, TypeScript types, and a clean architecture.
