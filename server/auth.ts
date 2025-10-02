@@ -42,13 +42,19 @@ async function initializeAdminUser() {
 
 export function setupAuth(app: Express) {
   initializeAdminUser();
+  const sessionSecret = process.env.SESSION_SECRET;
+  if (!sessionSecret && process.env.NODE_ENV === "production") {
+    throw new Error("SESSION_SECRET must be set in production for express-session");
+  }
+
   const sessionSettings: session.SessionOptions = {
-    secret: process.env.SESSION_SECRET!,
+    secret: sessionSecret ?? "dev-secret-change-me",
     resave: false,
     saveUninitialized: false,
     store: storage.sessionStore as any,
   };
 
+  // If behind a proxy (like when deployed), trust the first proxy.
   app.set("trust proxy", 1);
   app.use(session(sessionSettings));
   app.use(passport.initialize());

@@ -79,11 +79,42 @@ app.use((req, res, next) => {
   // this serves both the API and the client.
   // It is the only port that is not firewalled.
   const port = parseInt(process.env.PORT || '5000', 10);
-  server.listen({
+
+  const listenOptions: any = {
     port,
-    host: "0.0.0.0",
-    reusePort: true,
-  }, () => {
-    log(`serving on port ${port}`);
-  });
+    // Bind to localhost by default on environments that may not support 0.0.0.0
+    host: process.env.HOST || "127.0.0.1",
+    // Only enable reusePort if explicitly requested via env var (some platforms don't support it)
+    reusePort: process.env.REUSE_PORT === 'true',
+  };
+
+  function startServer(opts: any) {
+    return new Promise<void>((resolve, reject) => {
+      server.listen(opts, () => {
+        log(`serving on port ${opts.port} (host: ${opts.host}${opts.reusePort ? ', reusePort' : ''})`);
+        resolve();
+      }).on('error', (err: any) => reject(err));
+    });
+  }
+
+  try {
+    await startServer(listenOptions);
+  } catch (err: any) {
+    console.error('Failed to listen with initial options:', err && err.message);
+    // If the platform doesn't support reusePort or binding to 0.0.0.0, retry without reusePort
+    try {
+      const fallback = { ...listenOptions, reusePort: false };
+      await startServer(fallback);
+    } catch (err2: any) {
+      console.error('Retry without reusePort failed:', err2 && err2.message);
+      // Last resort: bind to localhost only (some Windows environments don't allow 0.0.0.0)
+      try {
+        const localhostFallback = { port, host: '127.0.0.1', reusePort: false };
+        await startServer(localhostFallback);
+      } catch (err3: any) {
+        console.error('Final retry on localhost failed:', err3 && err3.message);
+        throw err3;
+      }
+    }
+  }
 })();
