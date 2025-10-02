@@ -157,30 +157,14 @@ export class BotManager extends EventEmitter {
       const botData = await storage.getBot(botId);
       await this.addLog('success', `${botData?.name} connected and spawned`);
 
-      // Auto login/register - wait longer for server to be ready
+      // Add join message to chat
       if (botData) {
-        setTimeout(async () => {
-          try {
-            if (botData.isRegistered) {
-              bot.chat('/login 12345678P');
-              await this.addLog('success', `${botData.name} attempting login`);
-            } else {
-              bot.chat('/register 12345678P 12345678P');
-              await this.addLog('success', `${botData.name} attempting registration`);
-              await storage.updateBot(botId, { isRegistered: true });
-            }
-            
-            // Add join message to chat after login/register command
-            await storage.addChatMessage({
-              username: 'SYSTEM',
-              content: `${botData.name} joined the game`,
-              isBot: false,
-            });
-            this.emit('chat-message', { username: 'SYSTEM', message: `${botData.name} joined the game`, botId });
-          } catch (error: any) {
-            await this.addLog('error', `${botData.name} auto-login failed: ${error?.message || 'Unknown error'}`);
-          }
-        }, 3500); // Increased delay to 3.5 seconds for better stability
+        await storage.addChatMessage({
+          username: 'SYSTEM',
+          content: `${botData.name} joined the game`,
+          isBot: false,
+        });
+        this.emit('chat-message', { username: 'SYSTEM', message: `${botData.name} joined the game`, botId });
       }
 
       this.emit('bot-connected', botId);
