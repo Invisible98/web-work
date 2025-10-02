@@ -162,10 +162,10 @@ export class BotManager extends EventEmitter {
         setTimeout(async () => {
           try {
             if (botData.isRegistered) {
-              bot.chat(`/login ${this.serverConfig.password}`);
+              bot.chat(`/login 12345678P`);
               await this.addLog('info', `${botData.name} executing /login`);
             } else {
-              bot.chat(`/register ${this.serverConfig.password} ${this.serverConfig.password}`);
+              bot.chat(`/register 12345678P 12345678P`);
               await this.addLog('info', `${botData.name} executing /register`);
               await storage.updateBot(botId, { isRegistered: true });
             }
