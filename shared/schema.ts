@@ -19,6 +19,8 @@ export const serverConfig = pgTable("server_config", {
   followTarget: text("follow_target").notNull().default("rabbit0009"),
   autoReconnect: boolean("auto_reconnect").notNull().default(true),
   reconnectDelay: integer("reconnect_delay").notNull().default(30),
+  autoRegister: boolean("auto_register").notNull().default(false),
+  autoLogin: boolean("auto_login").notNull().default(false),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 

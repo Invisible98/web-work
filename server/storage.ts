@@ -77,6 +77,8 @@ export class MemStorage implements IStorage {
       followTarget: "rabbit0009",
       autoReconnect: true,
       reconnectDelay: 30,
+      autoRegister: false,
+      autoLogin: false,
       updatedAt: new Date(),
     };
     this.serverConfigs.set("default", defaultServerConfig);

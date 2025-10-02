@@ -24,6 +24,8 @@ export function ServerConfigComponent({ config, onSave, onTest, isSaving = false
     followTarget: config.followTarget,
     autoReconnect: config.autoReconnect,
     reconnectDelay: config.reconnectDelay,
+    autoRegister: config.autoRegister,
+    autoLogin: config.autoLogin,
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -107,7 +109,7 @@ export function ServerConfigComponent({ config, onSave, onTest, isSaving = false
 
             <div className="border-t border-border pt-6">
               <h4 className="font-pixel text-sm mb-4">Connection Settings</h4>
-              
+
               <div className="space-y-4">
                 <div>
                   <Label htmlFor="reconnect-delay" className="block text-sm font-medium mb-2">
@@ -152,6 +154,40 @@ export function ServerConfigComponent({ config, onSave, onTest, isSaving = false
                     checked={formData.autoReconnect}
                     onCheckedChange={(checked) => handleInputChange('autoReconnect', checked)}
                     data-testid="switch-auto-reconnect"
+                  />
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label htmlFor="autoRegister">Auto Register</Label>
+                    <p className="text-sm text-muted-foreground">
+                      Send /register command when bot joins
+                    </p>
+                  </div>
+                  <Switch
+                    id="autoRegister"
+                    checked={formData.autoRegister || false}
+                    onCheckedChange={(checked) =>
+                      setFormData({ ...formData, autoRegister: checked })
+                    }
+                    data-testid="switch-auto-register"
+                  />
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label htmlFor="autoLogin">Auto Login</Label>
+                    <p className="text-sm text-muted-foreground">
+                      Send /login command when bot joins
+                    </p>
+                  </div>
+                  <Switch
+                    id="autoLogin"
+                    checked={formData.autoLogin || false}
+                    onCheckedChange={(checked) =>
+                      setFormData({ ...formData, autoLogin: checked })
+                    }
+                    data-testid="switch-auto-login"
                   />
                 </div>
               </div>
