@@ -157,7 +157,7 @@ export class BotManager extends EventEmitter {
       const botData = await storage.getBot(botId);
       await this.addLog('success', `${botData?.name} connected and spawned`);
 
-      // Auto login/register
+      // Auto login/register - wait longer for server to be ready
       if (botData) {
         setTimeout(async () => {
           try {
@@ -172,7 +172,7 @@ export class BotManager extends EventEmitter {
           } catch (error: any) {
             await this.addLog('error', `${botData.name} auto-login failed: ${error?.message || 'Unknown error'}`);
           }
-        }, 1000);
+        }, 3000); // Increased delay to 3 seconds
       }
 
       this.emit('bot-connected', botId);
