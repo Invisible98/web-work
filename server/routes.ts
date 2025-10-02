@@ -13,7 +13,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   setupAuth(app);
 
   const httpServer = createServer(app);
-
+  
   // Initialize services
   const botManager = new BotManager();
   const openaiService = new OpenAIService();
@@ -28,7 +28,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   botManager.on('bot-connected', async (botId) => {
     const allBots = await botManager.getAllBots();
     wsManager.broadcastBotUpdate(allBots);
-
+    
     const stats = await botManager.getServerStats();
     wsManager.broadcastServerStats(stats);
   });
@@ -36,7 +36,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   botManager.on('bot-disconnected', async (botId) => {
     const allBots = await botManager.getAllBots();
     wsManager.broadcastBotUpdate(allBots);
-
+    
     const stats = await botManager.getServerStats();
     wsManager.broadcastServerStats(stats);
   });
@@ -53,7 +53,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   botManager.on('chat-message', async ({ username, message, botId }) => {
     // Check if this is a command from the AI listen user
     const aiAction = await openaiService.parseCommand(username, message);
-
+    
     if (aiAction) {
       if (aiAction.action === 'chat') {
         // This is a chat response, send it back
@@ -62,7 +62,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           // Find an online bot to send the response
           const bots = await botManager.getAllBots();
           const onlineBot = bots.find(bot => bot.status === 'online');
-
+          
           if (onlineBot) {
             await botManager.executeAction({
               action: 'chat',
@@ -74,7 +74,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       } else {
         // Execute the bot action
         await botManager.executeAction(aiAction);
-
+        
         // Generate and send a response if auto-response is enabled
         const aiConfig = await storage.getAiConfig();
         if (aiConfig.autoResponse) {
@@ -82,7 +82,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           if (response) {
             const bots = await botManager.getAllBots();
             const onlineBot = bots.find(bot => bot.status === 'online');
-
+            
             if (onlineBot) {
               await botManager.executeAction({
                 action: 'chat',
@@ -100,6 +100,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Bot management routes
   app.get("/api/bots", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    
     try {
       const bots = await botManager.getAllBots();
       res.json(bots);
@@ -109,6 +111,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.post("/api/bots", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    if (req.user?.role !== 'admin') return res.sendStatus(403);
+    
     try {
       const { name } = req.body;
       const bot = await botManager.spawnBot(name);
@@ -119,6 +124,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.post("/api/bots/spawn-multiple", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    if (req.user?.role !== 'admin') return res.sendStatus(403);
+    
     try {
       const { count = 10 } = req.body;
       const bots = await botManager.spawnMultipleBots(count);
@@ -129,6 +137,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.post("/api/bots/:id/connect", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    if (req.user?.role !== 'admin') return res.sendStatus(403);
+    
     try {
       await botManager.connectBot(req.params.id);
       res.sendStatus(200);
@@ -138,6 +149,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.post("/api/bots/:id/disconnect", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    if (req.user?.role !== 'admin') return res.sendStatus(403);
+    
     try {
       await botManager.disconnectBot(req.params.id);
       res.sendStatus(200);
@@ -147,6 +161,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.patch("/api/bots/:id/rename", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    if (req.user?.role !== 'admin') return res.sendStatus(403);
+    
     try {
       const { name } = req.body;
       if (!name || typeof name !== 'string') {
@@ -160,6 +177,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.delete("/api/bots/:id", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    if (req.user?.role !== 'admin') return res.sendStatus(403);
+    
     try {
       await botManager.deleteBot(req.params.id);
       res.sendStatus(200);
@@ -169,6 +189,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.post("/api/bots/connect-all", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    if (req.user?.role !== 'admin') return res.sendStatus(403);
+    
     try {
       await botManager.connectAllBots();
       res.sendStatus(200);
@@ -178,6 +201,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.post("/api/bots/disconnect-all", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    if (req.user?.role !== 'admin') return res.sendStatus(403);
+    
     try {
       await botManager.disconnectAllBots();
       res.sendStatus(200);
@@ -188,6 +214,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Bot actions
   app.post("/api/bots/action", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    if (req.user?.role !== 'admin') return res.sendStatus(403);
+    
     try {
       const action = botActionSchema.parse(req.body);
       await botManager.executeAction(action);
@@ -203,6 +232,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Server configuration
   app.get("/api/server-config", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    if (req.user?.role !== 'admin') return res.sendStatus(403);
+    
     try {
       const config = await storage.getServerConfig();
       res.json(config);
@@ -212,6 +244,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.post("/api/server-config", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    if (req.user?.role !== 'admin') return res.sendStatus(403);
+    
     try {
       const configData = insertServerConfigSchema.parse(req.body);
       const config = await storage.updateServerConfig(configData);
@@ -229,6 +264,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Server stats
   app.get("/api/server-stats", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    
     try {
       const stats = await botManager.getServerStats();
       res.json(stats);
@@ -239,6 +276,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Logs
   app.get("/api/logs", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    
     try {
       const limit = req.query.limit ? parseInt(req.query.limit as string) : 100;
       const logs = await storage.getLogs(limit);
@@ -249,6 +288,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.delete("/api/logs", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    if (req.user?.role !== 'admin') return res.sendStatus(403);
+    
     try {
       await storage.clearLogs();
       res.sendStatus(200);
@@ -259,6 +301,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Chat messages
   app.get("/api/chat", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    
     try {
       const limit = req.query.limit ? parseInt(req.query.limit as string) : 50;
       const messages = await storage.getChatMessages(limit);
@@ -270,6 +314,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // AI configuration
   app.get("/api/ai-config", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    if (req.user?.role !== 'admin') return res.sendStatus(403);
+    
     try {
       const config = await storage.getAiConfig();
       res.json(config);
@@ -279,6 +326,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.post("/api/ai-config", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    if (req.user?.role !== 'admin') return res.sendStatus(403);
+    
     try {
       const configData = insertAiConfigSchema.parse(req.body);
       const config = await storage.updateAiConfig(configData);

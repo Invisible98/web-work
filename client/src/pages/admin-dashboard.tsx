@@ -286,7 +286,7 @@ export default function AdminDashboard() {
   // Action handlers
   const handleBotAction = (action: string, target?: string) => {
     const botIds = selectedBot === "all" ? undefined : [selectedBot];
-
+    
     botActionMutation.mutate({
       action: action as any,
       target,
@@ -301,7 +301,7 @@ export default function AdminDashboard() {
 
   const handleCustomCommand = () => {
     if (!customCommand.trim()) return;
-
+    
     const action = customCommand.startsWith("/") ? "command" : "chat";
     handleBotAction(action);
   };
@@ -366,11 +366,19 @@ export default function AdminDashboard() {
             </div>
 
             {/* User Menu */}
-            <div className="flex items-center space-x-4">
-              <div className="text-right">
-                <p className="text-sm font-medium text-foreground">{user?.username}</p>
-                <p className="text-xs text-muted-foreground capitalize">{user?.role}</p>
+            <div className="flex items-center space-x-3 border-l border-border pl-4">
+              <div className="text-right hidden md:block">
+                <p className="text-sm font-medium" data-testid="admin-username">{user.username}</p>
+                <p className="text-xs text-primary">Administrator</p>
               </div>
+              <MinecraftButton
+                variant="destructive"
+                size="sm"
+                onClick={handleLogout}
+                data-testid="button-logout"
+              >
+                <LogOut className="h-4 w-4" />
+              </MinecraftButton>
             </div>
           </div>
         </div>
