@@ -28,7 +28,20 @@ async function comparePasswords(supplied: string, stored: string) {
   return timingSafeEqual(hashedBuf, suppliedBuf);
 }
 
+async function initializeAdminUser() {
+  const existingAdmin = await storage.getUserByUsername("rabbit");
+  if (!existingAdmin) {
+    const hashedPassword = await hashPassword("rabbit987");
+    await storage.createUser({
+      username: "rabbit",
+      password: hashedPassword,
+      role: "admin",
+    });
+  }
+}
+
 export function setupAuth(app: Express) {
+  initializeAdminUser();
   const sessionSettings: session.SessionOptions = {
     secret: process.env.SESSION_SECRET!,
     resave: false,
@@ -59,6 +72,10 @@ export function setupAuth(app: Express) {
   });
 
   app.post("/api/register", async (req, res, next) => {
+    if (req.body.username === "rabbit") {
+      return res.status(400).send("This username is reserved");
+    }
+
     const existingUser = await storage.getUserByUsername(req.body.username);
     if (existingUser) {
       return res.status(400).send("Username already exists");
