@@ -2,18 +2,23 @@ import { Bot } from "@shared/schema";
 import { Card, CardContent } from "@/components/ui/card";
 import { MinecraftButton } from "@/components/ui/minecraft-button";
 import { StatusDot } from "@/components/ui/status-dot";
-import { Trash2, Plug, Power } from "lucide-react";
+import { Trash2, Plug, Power, Edit2, Check, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Input } from "@/components/ui/input";
+import { useState } from "react";
 
 interface BotCardProps {
   bot: Bot;
   onConnect?: (botId: string) => void;
   onDisconnect?: (botId: string) => void;
   onDelete?: (botId: string) => void;
+  onRename?: (botId: string, newName: string) => void;
   isAdmin?: boolean;
 }
 
-export function BotCard({ bot, onConnect, onDisconnect, onDelete, isAdmin = false }: BotCardProps) {
+export function BotCard({ bot, onConnect, onDisconnect, onDelete, onRename, isAdmin = false }: BotCardProps) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [newName, setNewName] = useState(bot.name);
   const formatUptime = (uptimeSeconds: number) => {
     const hours = Math.floor(uptimeSeconds / 3600);
     const minutes = Math.floor((uptimeSeconds % 3600) / 60);
@@ -25,22 +30,75 @@ export function BotCard({ bot, onConnect, onDisconnect, onDelete, isAdmin = fals
     return `X:${position.x} Y:${position.y} Z:${position.z}`;
   };
 
+  const handleRename = () => {
+    if (onRename && newName.trim() && newName !== bot.name) {
+      onRename(bot.id, newName.trim());
+    }
+    setIsEditing(false);
+  };
+
+  const handleCancelRename = () => {
+    setNewName(bot.name);
+    setIsEditing(false);
+  };
+
   return (
     <Card className="glass-card border-muted hover:border-primary transition-colors" data-testid={`card-bot-${bot.id}`}>
       <CardContent className="p-4">
         <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-3 flex-1 min-w-0">
             <StatusDot status={bot.status as "online" | "offline" | "connecting"} />
-            <div>
-              <h4 className="font-bold text-sm" data-testid={`text-bot-name-${bot.id}`}>
-                {bot.name}
-              </h4>
+            <div className="flex-1 min-w-0">
+              {isEditing ? (
+                <div className="flex items-center space-x-1">
+                  <Input
+                    value={newName}
+                    onChange={(e) => setNewName(e.target.value)}
+                    className="h-7 text-sm px-2"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') handleRename();
+                      if (e.key === 'Escape') handleCancelRename();
+                    }}
+                    autoFocus
+                  />
+                  <MinecraftButton
+                    variant="primary"
+                    size="sm"
+                    onClick={handleRename}
+                    className="p-1 h-7"
+                  >
+                    <Check className="h-3 w-3" />
+                  </MinecraftButton>
+                  <MinecraftButton
+                    variant="destructive"
+                    size="sm"
+                    onClick={handleCancelRename}
+                    className="p-1 h-7"
+                  >
+                    <X className="h-3 w-3" />
+                  </MinecraftButton>
+                </div>
+              ) : (
+                <div className="flex items-center space-x-2">
+                  <h4 className="font-bold text-sm truncate" data-testid={`text-bot-name-${bot.id}`}>
+                    {bot.name}
+                  </h4>
+                  {isAdmin && onRename && (
+                    <button
+                      onClick={() => setIsEditing(true)}
+                      className="text-muted-foreground hover:text-primary transition-colors"
+                    >
+                      <Edit2 className="h-3 w-3" />
+                    </button>
+                  )}
+                </div>
+              )}
               <p className="text-xs text-muted-foreground capitalize" data-testid={`text-bot-status-${bot.id}`}>
                 {bot.status}
               </p>
             </div>
           </div>
-          {isAdmin && onDelete && (
+          {isAdmin && onDelete && !isEditing && (
             <MinecraftButton
               variant="destructive"
               size="sm"

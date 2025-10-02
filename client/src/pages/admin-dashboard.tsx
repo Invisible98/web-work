@@ -183,6 +183,19 @@ export default function AdminDashboard() {
     },
   });
 
+  const renameBotMutation = useMutation({
+    mutationFn: async ({ botId, name }: { botId: string; name: string }) => {
+      await apiRequest("PATCH", `/api/bots/${botId}/rename`, { name });
+    },
+    onSuccess: () => {
+      toast({ title: "Bot renamed successfully", variant: "default" });
+      queryClient.invalidateQueries({ queryKey: ["/api/bots"] });
+    },
+    onError: (error: Error) => {
+      toast({ title: "Failed to rename bot", description: error.message, variant: "destructive" });
+    },
+  });
+
   const deleteBotMutation = useMutation({
     mutationFn: async (botId: string) => {
       await apiRequest("DELETE", `/api/bots/${botId}`);
@@ -533,6 +546,7 @@ export default function AdminDashboard() {
                         onConnect={(botId) => connectBotMutation.mutate(botId)}
                         onDisconnect={(botId) => disconnectBotMutation.mutate(botId)}
                         onDelete={(botId) => deleteBotMutation.mutate(botId)}
+                        onRename={(botId, name) => renameBotMutation.mutate({ botId, name })}
                         isAdmin={true}
                       />
                     ))
@@ -679,36 +693,43 @@ export default function AdminDashboard() {
                         No chat messages yet
                       </div>
                     ) : (
-                      chatMessages.map((message) => (
-                        <div
-                          key={message.id}
-                          className="flex items-start space-x-2 p-2 hover:bg-white/5 rounded"
-                          data-testid={`chat-message-${message.id}`}
-                        >
-                          <div className={`w-6 h-6 rounded flex items-center justify-center text-xs font-bold flex-shrink-0 ${
-                            message.isBot ? 'bg-accent text-accent-foreground' : 'bg-primary text-primary-foreground'
-                          }`}>
-                            {message.isBot ? <MessageCircle className="h-3 w-3" /> : <User className="h-3 w-3" />}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center space-x-2 mb-1">
-                              <span className="font-bold text-xs text-primary">
-                                {message.username}
-                              </span>
-                              <span className="text-muted-foreground text-xs">
-                                {new Date(message.timestamp!).toLocaleTimeString([], { 
-                                  hour: '2-digit', 
-                                  minute: '2-digit',
-                                  second: '2-digit'
-                                })}
-                              </span>
+                      chatMessages.map((message) => {
+                        const isSystem = message.username === 'SYSTEM';
+                        return (
+                          <div
+                            key={message.id}
+                            className={`flex items-start space-x-2 p-2 hover:bg-white/5 rounded ${
+                              isSystem ? 'bg-secondary/20' : ''
+                            }`}
+                            data-testid={`chat-message-${message.id}`}
+                          >
+                            <div className={`w-6 h-6 rounded flex items-center justify-center text-xs font-bold flex-shrink-0 ${
+                              isSystem ? 'bg-secondary text-secondary-foreground' :
+                              message.isBot ? 'bg-accent text-accent-foreground' : 'bg-primary text-primary-foreground'
+                            }`}>
+                              {isSystem ? <Server className="h-3 w-3" /> :
+                               message.isBot ? <MessageCircle className="h-3 w-3" /> : <User className="h-3 w-3" />}
                             </div>
-                            <p className="text-foreground text-xs break-words">
-                              {message.content}
-                            </p>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center space-x-2 mb-1">
+                                <span className={`font-bold text-xs ${isSystem ? 'text-secondary' : 'text-primary'}`}>
+                                  {message.username}
+                                </span>
+                                <span className="text-muted-foreground text-xs">
+                                  {new Date(message.timestamp!).toLocaleTimeString([], { 
+                                    hour: '2-digit', 
+                                    minute: '2-digit',
+                                    second: '2-digit'
+                                  })}
+                                </span>
+                              </div>
+                              <p className={`text-xs break-words ${isSystem ? 'text-secondary italic' : 'text-foreground'}`}>
+                                {message.content}
+                              </p>
+                            </div>
                           </div>
-                        </div>
-                      ))
+                        );
+                      })
                     )}
                   </div>
                 </CardContent>
@@ -732,6 +753,7 @@ export default function AdminDashboard() {
                     onConnect={(botId) => connectBotMutation.mutate(botId)}
                     onDisconnect={(botId) => disconnectBotMutation.mutate(botId)}
                     onDelete={(botId) => deleteBotMutation.mutate(botId)}
+                    onRename={(botId, name) => renameBotMutation.mutate({ botId, name })}
                     isAdmin={true}
                   />
                 ))}

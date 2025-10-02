@@ -157,6 +157,16 @@ export class BotManager extends EventEmitter {
       const botData = await storage.getBot(botId);
       await this.addLog('success', `${botData?.name} connected and spawned`);
 
+      // Add join message to chat
+      if (botData) {
+        await storage.addChatMessage({
+          username: 'SYSTEM',
+          content: `${botData.name} joined the game`,
+          isBot: false,
+        });
+        this.emit('chat-message', { username: 'SYSTEM', message: `${botData.name} joined the game`, botId });
+      }
+
       // Auto login/register - wait longer for server to be ready
       if (botData) {
         setTimeout(async () => {
@@ -229,6 +239,8 @@ export class BotManager extends EventEmitter {
     const botInstance = this.bots.get(botId);
     if (!botInstance) return;
 
+    const botData = await storage.getBot(botId);
+    
     botInstance.bot = null;
     botInstance.isConnecting = false;
 
@@ -244,6 +256,16 @@ export class BotManager extends EventEmitter {
       status: 'offline',
       currentAction: 'disconnected',
     });
+
+    // Add leave message to chat
+    if (botData) {
+      await storage.addChatMessage({
+        username: 'SYSTEM',
+        content: `${botData.name} left the game`,
+        isBot: false,
+      });
+      this.emit('chat-message', { username: 'SYSTEM', message: `${botData.name} left the game`, botId });
+    }
 
     this.emit('bot-disconnected', botId);
 
@@ -285,6 +307,25 @@ export class BotManager extends EventEmitter {
 
     const botData = await storage.getBot(botId);
     await this.addLog('info', `${botData?.name} disconnected`);
+  }
+
+  async renameBot(botId: string, newName: string): Promise<void> {
+    const botData = await storage.getBot(botId);
+    if (!botData) {
+      throw new Error(`Bot ${botId} not found`);
+    }
+
+    // Check if new name already exists
+    const existing = await storage.getBotByName(newName);
+    if (existing && existing.id !== botId) {
+      throw new Error(`Bot with name ${newName} already exists`);
+    }
+
+    const oldName = botData.name;
+    await storage.updateBot(botId, { name: newName });
+    
+    await this.addLog('info', `Bot ${oldName} renamed to ${newName}`);
+    this.emit('bot-created', await storage.getBot(botId));
   }
 
   async deleteBot(botId: string): Promise<void> {

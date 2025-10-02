@@ -160,6 +160,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.patch("/api/bots/:id/rename", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    if (req.user?.role !== 'admin') return res.sendStatus(403);
+    
+    try {
+      const { name } = req.body;
+      if (!name || typeof name !== 'string') {
+        return res.status(400).json({ message: "Name is required" });
+      }
+      await botManager.renameBot(req.params.id, name);
+      res.sendStatus(200);
+    } catch (error: any) {
+      res.status(400).json({ message: error?.message || 'Unknown error' });
+    }
+  });
+
   app.delete("/api/bots/:id", async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
     if (req.user?.role !== 'admin') return res.sendStatus(403);
