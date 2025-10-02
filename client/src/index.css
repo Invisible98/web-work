@@ -1,0 +1,173 @@
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: hsl(0 0% 4%);
+  --foreground: hsl(0 0% 98%);
+  --card: hsl(0 0% 10%);
+  --card-foreground: hsl(0 0% 98%);
+  --popover: hsl(0 0% 10%);
+  --popover-foreground: hsl(0 0% 98%);
+  --primary: hsl(142 76% 58%);
+  --primary-foreground: hsl(0 0% 0%);
+  --secondary: hsl(240 4% 46%);
+  --secondary-foreground: hsl(0 0% 98%);
+  --muted: hsl(240 4% 20%);
+  --muted-foreground: hsl(240 5% 65%);
+  --accent: hsl(43 96% 56%);
+  --accent-foreground: hsl(0 0% 0%);
+  --destructive: hsl(0 84% 60%);
+  --destructive-foreground: hsl(0 0% 98%);
+  --border: hsl(240 4% 20%);
+  --input: hsl(240 4% 20%);
+  --ring: hsl(142 76% 58%);
+  --chart-1: hsl(142 76% 58%);
+  --chart-2: hsl(159 100% 36%);
+  --chart-3: hsl(43 96% 56%);
+  --chart-4: hsl(147 78% 42%);
+  --chart-5: hsl(341 75% 51%);
+  --sidebar: hsl(0 0% 10%);
+  --sidebar-foreground: hsl(0 0% 98%);
+  --sidebar-primary: hsl(142 76% 58%);
+  --sidebar-primary-foreground: hsl(0 0% 0%);
+  --sidebar-accent: hsl(240 4% 20%);
+  --sidebar-accent-foreground: hsl(142 76% 58%);
+  --sidebar-border: hsl(240 4% 20%);
+  --sidebar-ring: hsl(142 76% 58%);
+  --font-sans: Inter, sans-serif;
+  --font-serif: Georgia, serif;
+  --font-mono: "Roboto Mono", monospace;
+  --font-pixel: "Press Start 2P", cursive;
+  --radius: 0.25rem;
+}
+
+.dark {
+  --background: hsl(0 0% 4%);
+  --foreground: hsl(0 0% 98%);
+  --card: hsl(0 0% 10%);
+  --card-foreground: hsl(0 0% 98%);
+  --popover: hsl(0 0% 10%);
+  --popover-foreground: hsl(0 0% 98%);
+  --primary: hsl(142 76% 58%);
+  --primary-foreground: hsl(0 0% 0%);
+  --secondary: hsl(240 4% 46%);
+  --secondary-foreground: hsl(0 0% 98%);
+  --muted: hsl(240 4% 20%);
+  --muted-foreground: hsl(240 5% 65%);
+  --accent: hsl(43 96% 56%);
+  --accent-foreground: hsl(0 0% 0%);
+  --destructive: hsl(0 84% 60%);
+  --destructive-foreground: hsl(0 0% 98%);
+  --border: hsl(240 4% 20%);
+  --input: hsl(240 4% 20%);
+  --ring: hsl(142 76% 58%);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans antialiased bg-background text-foreground;
+  }
+
+  .font-pixel {
+    font-family: var(--font-pixel);
+  }
+}
+
+@layer components {
+  .minecraft-btn {
+    @apply relative font-pixel text-xs uppercase px-6 py-3 border-3 transition-all duration-100 ease-in-out;
+    box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.5);
+    image-rendering: pixelated;
+  }
+
+  .minecraft-btn:hover:not(:disabled) {
+    transform: translate(-2px, -2px);
+    box-shadow: 6px 6px 0 rgba(0, 0, 0, 0.5);
+  }
+
+  .minecraft-btn:active:not(:disabled) {
+    transform: translate(2px, 2px);
+    box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.5);
+  }
+
+  .glass-card {
+    background: rgba(26, 26, 26, 0.6);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .gradient-header {
+    background: linear-gradient(135deg, hsl(142 76% 20%) 0%, hsl(142 76% 10%) 100%);
+    border-bottom: 3px solid hsl(142 76% 58%);
+  }
+
+  .status-dot {
+    @apply w-3 h-3 rounded-full inline-block animate-pulse;
+  }
+
+  .status-online {
+    @apply bg-primary;
+    box-shadow: 0 0 12px hsl(142 76% 58%);
+  }
+
+  .status-offline {
+    @apply bg-destructive;
+    box-shadow: 0 0 12px hsl(0 84% 60%);
+  }
+
+  .status-connecting {
+    @apply bg-accent;
+    box-shadow: 0 0 12px hsl(43 96% 56%);
+  }
+
+  .log-entry {
+    @apply font-mono text-xs p-2 border-l-3;
+  }
+
+  .log-info {
+    @apply border-l-blue-500 text-blue-300;
+  }
+
+  .log-success {
+    @apply border-l-primary text-green-300;
+  }
+
+  .log-warning {
+    @apply border-l-accent text-yellow-300;
+  }
+
+  .log-error {
+    @apply border-l-destructive text-red-300;
+  }
+
+  .pixel-border {
+    @apply border-3;
+    image-rendering: pixelated;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: hsl(0 0% 10%);
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(142 76% 58%);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(142 76% 48%);
+}
