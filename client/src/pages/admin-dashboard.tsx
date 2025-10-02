@@ -666,6 +666,53 @@ export default function AdminDashboard() {
                 onClearLogs={() => clearLogsMutation.mutate()}
                 isAdmin={true}
               />
+
+              {/* Minecraft Chat */}
+              <Card className="glass-card border-accent" data-testid="minecraft-chat">
+                <CardHeader className="p-4 border-b border-border">
+                  <CardTitle className="font-pixel text-sm">Minecraft Server Chat</CardTitle>
+                </CardHeader>
+                <CardContent className="p-0">
+                  <div className="p-4 bg-black/50 max-h-96 overflow-y-auto font-mono text-xs space-y-2">
+                    {chatMessages.length === 0 ? (
+                      <div className="text-center text-muted-foreground py-8">
+                        No chat messages yet
+                      </div>
+                    ) : (
+                      chatMessages.map((message) => (
+                        <div
+                          key={message.id}
+                          className="flex items-start space-x-2 p-2 hover:bg-white/5 rounded"
+                          data-testid={`chat-message-${message.id}`}
+                        >
+                          <div className={`w-6 h-6 rounded flex items-center justify-center text-xs font-bold flex-shrink-0 ${
+                            message.isBot ? 'bg-accent text-accent-foreground' : 'bg-primary text-primary-foreground'
+                          }`}>
+                            {message.isBot ? <MessageCircle className="h-3 w-3" /> : <User className="h-3 w-3" />}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center space-x-2 mb-1">
+                              <span className="font-bold text-xs text-primary">
+                                {message.username}
+                              </span>
+                              <span className="text-muted-foreground text-xs">
+                                {new Date(message.timestamp!).toLocaleTimeString([], { 
+                                  hour: '2-digit', 
+                                  minute: '2-digit',
+                                  second: '2-digit'
+                                })}
+                              </span>
+                            </div>
+                            <p className="text-foreground text-xs break-words">
+                              {message.content}
+                            </p>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
             </section>
           )}
 
