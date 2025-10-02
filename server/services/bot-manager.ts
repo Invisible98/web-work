@@ -157,28 +157,26 @@ export class BotManager extends EventEmitter {
       const botData = await storage.getBot(botId);
       await this.addLog('success', `${botData?.name} connected and spawned`);
 
-      // Add join message to chat
-      if (botData) {
-        await storage.addChatMessage({
-          username: 'SYSTEM',
-          content: `${botData.name} joined the game`,
-          isBot: false,
-        });
-        this.emit('chat-message', { username: 'SYSTEM', message: `${botData.name} joined the game`, botId });
-      }
-
       // Auto login/register - wait longer for server to be ready
       if (botData) {
         setTimeout(async () => {
           try {
             if (botData.isRegistered) {
               bot.chat('/login 12345678P');
-              await this.addLog('success', `${botData.name} sent command: /login 12345678P`);
+              await this.addLog('success', `${botData.name} attempting login`);
             } else {
               bot.chat('/register 12345678P 12345678P');
-              await this.addLog('success', `${botData.name} sent command: /register 12345678P 12345678P`);
+              await this.addLog('success', `${botData.name} attempting registration`);
               await storage.updateBot(botId, { isRegistered: true });
             }
+            
+            // Add join message to chat after login/register command
+            await storage.addChatMessage({
+              username: 'SYSTEM',
+              content: `${botData.name} joined the game`,
+              isBot: false,
+            });
+            this.emit('chat-message', { username: 'SYSTEM', message: `${botData.name} joined the game`, botId });
           } catch (error: any) {
             await this.addLog('error', `${botData.name} auto-login failed: ${error?.message || 'Unknown error'}`);
           }
@@ -205,14 +203,20 @@ export class BotManager extends EventEmitter {
       try {
         if (username === bot.username) return; // Ignore own messages
 
-        // Store chat message
-        await storage.addChatMessage({
-          username,
-          content: message,
-          isBot: false,
-        });
+        // Don't store system messages or command responses from the bot
+        const isSystemMessage = username === 'Server' || username === '*Server*';
+        const isCommandResponse = message.includes('registered') || message.includes('logged in') || message.includes('password');
+        
+        if (!isSystemMessage && !isCommandResponse) {
+          // Store chat message
+          await storage.addChatMessage({
+            username,
+            content: message,
+            isBot: false,
+          });
 
-        this.emit('chat-message', { username, message, botId });
+          this.emit('chat-message', { username, message, botId });
+        }
       } catch (error: any) {
         console.error('Chat event error:', error);
       }
