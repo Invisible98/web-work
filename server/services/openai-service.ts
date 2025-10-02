@@ -70,7 +70,7 @@ If no valid command is found, respond with:
       if (result.action && result.action !== 'chat') {
         // Increment commands parsed
         await storage.updateAiConfig({ 
-          commandsParsed: aiConfig.commandsParsed + 1 
+          commandsParsed: (aiConfig.commandsParsed || 0) + 1 
         });
         
         return {
@@ -147,18 +147,22 @@ If no valid command is found, respond with:
     const aiConfig = await storage.getAiConfig();
     const responseTime = Date.now() - this.requestStartTime;
     
-    const newTotal = aiConfig.totalRequests + 1;
+    const totalRequests = aiConfig.totalRequests || 0;
+    const avgResponseTime = aiConfig.avgResponseTime || 0;
+    const successRate = aiConfig.successRate || 100;
+    
+    const newTotal = totalRequests + 1;
     const newAvgResponse = Math.round(
-      (aiConfig.avgResponseTime * aiConfig.totalRequests + responseTime) / newTotal
+      (avgResponseTime * totalRequests + responseTime) / newTotal
     );
     
-    let newSuccessRate = aiConfig.successRate;
+    let newSuccessRate = successRate;
     if (success) {
       // Calculate new success rate
-      const successfulRequests = Math.round((aiConfig.successRate / 100) * aiConfig.totalRequests) + 1;
+      const successfulRequests = Math.round((successRate / 100) * totalRequests) + 1;
       newSuccessRate = Math.round((successfulRequests / newTotal) * 100);
     } else {
-      const successfulRequests = Math.round((aiConfig.successRate / 100) * aiConfig.totalRequests);
+      const successfulRequests = Math.round((successRate / 100) * totalRequests);
       newSuccessRate = Math.round((successfulRequests / newTotal) * 100);
     }
 

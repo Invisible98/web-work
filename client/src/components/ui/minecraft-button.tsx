@@ -2,7 +2,7 @@ import { forwardRef } from "react";
 import { Button, ButtonProps } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-interface MinecraftButtonProps extends ButtonProps {
+interface MinecraftButtonProps extends Omit<ButtonProps, 'variant'> {
   variant?: "primary" | "secondary" | "destructive" | "accent";
 }
 

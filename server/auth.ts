@@ -33,7 +33,7 @@ export function setupAuth(app: Express) {
     secret: process.env.SESSION_SECRET!,
     resave: false,
     saveUninitialized: false,
-    store: storage.sessionStore,
+    store: storage.sessionStore as any,
   };
 
   app.set("trust proxy", 1);
@@ -53,7 +53,7 @@ export function setupAuth(app: Express) {
   );
 
   passport.serializeUser((user, done) => done(null, user.id));
-  passport.deserializeUser(async (id: number, done) => {
+  passport.deserializeUser(async (id: string, done) => {
     const user = await storage.getUser(id);
     done(null, user);
   });

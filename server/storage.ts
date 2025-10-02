@@ -37,7 +37,7 @@ export interface IStorage {
   updateAiConfig(config: Partial<InsertAiConfig>): Promise<AiConfig>;
 
   // Session store
-  sessionStore: session.SessionStore;
+  sessionStore: ReturnType<typeof createMemoryStore>;
 }
 
 export class MemStorage implements IStorage {
@@ -48,7 +48,7 @@ export class MemStorage implements IStorage {
   private logsArray: Log[];
   private chatMessagesArray: ChatMessage[];
   private aiConfigs: Map<string, AiConfig>;
-  public sessionStore: session.SessionStore;
+  public sessionStore: ReturnType<typeof createMemoryStore>;
 
   constructor() {
     this.users = new Map();
@@ -61,7 +61,7 @@ export class MemStorage implements IStorage {
     
     this.sessionStore = new MemoryStore({
       checkPeriod: 86400000,
-    });
+    }) as any;
 
     // Initialize default configurations
     this.initializeDefaults();
@@ -111,7 +111,8 @@ export class MemStorage implements IStorage {
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = randomUUID();
     const user: User = { 
-      ...insertUser, 
+      ...insertUser,
+      role: insertUser.role || 'user',
       id,
       createdAt: new Date(),
     };
@@ -152,6 +153,11 @@ export class MemStorage implements IStorage {
     const id = randomUUID();
     const bot: Bot = {
       ...insertBot,
+      status: insertBot.status || 'offline',
+      health: insertBot.health ?? null,
+      position: insertBot.position ?? null,
+      currentAction: insertBot.currentAction ?? null,
+      uptime: insertBot.uptime ?? null,
       id,
       createdAt: new Date(),
       lastSeen: new Date(),
@@ -200,6 +206,7 @@ export class MemStorage implements IStorage {
     const id = randomUUID();
     const log: Log = {
       ...insertLog,
+      botId: insertLog.botId ?? null,
       id,
       timestamp: new Date(),
     };
@@ -226,6 +233,8 @@ export class MemStorage implements IStorage {
     const id = randomUUID();
     const message: ChatMessage = {
       ...insertMessage,
+      isBot: insertMessage.isBot || false,
+      botId: insertMessage.botId ?? null,
       id,
       timestamp: new Date(),
     };

@@ -1,6 +1,6 @@
 import { EventEmitter } from 'events';
 import mineflayer, { Bot as MineflayerBot } from 'mineflayer';
-import { pathfinder, Movements, goals } from 'mineflayer-pathfinder';
+import { pathfinder, Movements } from 'mineflayer-pathfinder';
 import { storage } from '../storage';
 import { Bot, InsertBot, BotAction, ServerConfig } from '@shared/schema';
 
@@ -15,7 +15,7 @@ interface BotInstance {
 
 export class BotManager extends EventEmitter {
   private bots: Map<string, BotInstance> = new Map();
-  private serverConfig: ServerConfig;
+  private serverConfig!: ServerConfig;
 
   constructor() {
     super();
@@ -85,8 +85,8 @@ export class BotManager extends EventEmitter {
       try {
         const bot = await this.spawnBot();
         bots.push(bot);
-      } catch (error) {
-        await this.addLog('error', `Failed to spawn bot ${i + 1}: ${error.message}`);
+      } catch (error: any) {
+        await this.addLog('error', `Failed to spawn bot ${i + 1}: ${error?.message || 'Unknown error'}`);
       }
     }
     
@@ -114,8 +114,7 @@ export class BotManager extends EventEmitter {
         host: this.serverConfig.ip,
         port: this.serverConfig.port,
         username: botData.name,
-        password: this.serverConfig.password,
-        version: false, // Use latest version
+        auth: 'microsoft',
       });
 
       // Load pathfinder plugin
@@ -128,10 +127,10 @@ export class BotManager extends EventEmitter {
       
       await this.addLog('info', `${botData.name} connecting to ${this.serverConfig.ip}:${this.serverConfig.port}`);
       
-    } catch (error) {
+    } catch (error: any) {
       botInstance.isConnecting = false;
       await storage.updateBot(botId, { status: 'offline' });
-      await this.addLog('error', `Failed to connect ${botData.name}: ${error.message}`);
+      await this.addLog('error', `Failed to connect ${botData.name}: ${error?.message || 'Unknown error'}`);
       
       if (this.serverConfig.autoReconnect) {
         this.scheduleReconnect(botId);
@@ -338,8 +337,8 @@ export class BotManager extends EventEmitter {
       }
 
       await this.addLog('success', `${botData.name}: ${action.action} executed`);
-    } catch (error) {
-      await this.addLog('error', `${botData.name}: Failed to execute ${action.action}: ${error.message}`);
+    } catch (error: any) {
+      await this.addLog('error', `${botData.name}: Failed to execute ${action.action}: ${error?.message || 'Unknown error'}`);
     }
   }
 
@@ -349,10 +348,11 @@ export class BotManager extends EventEmitter {
       throw new Error(`Player ${playerName} not found`);
     }
 
+    const { goals } = require('mineflayer-pathfinder');
     const mcData = require('minecraft-data')(bot.version);
     const movements = new Movements(bot, mcData);
     bot.pathfinder.setMovements(movements);
-    bot.pathfinder.setGoal(new goals.GoalFollow(player.entity, 3), true);
+    bot.pathfinder.setGoal(new goals.GoalFollow(player.entity, 3));
   }
 
   private async attackPlayer(bot: MineflayerBot, playerName: string): Promise<void> {
@@ -420,8 +420,8 @@ export class BotManager extends EventEmitter {
     for (const bot of allBots) {
       try {
         await this.connectBot(bot.id);
-      } catch (error) {
-        await this.addLog('error', `Failed to connect ${bot.name}: ${error.message}`);
+      } catch (error: any) {
+        await this.addLog('error', `Failed to connect ${bot.name}: ${error?.message || 'Unknown error'}`);
       }
     }
   }

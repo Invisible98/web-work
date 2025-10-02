@@ -17,7 +17,7 @@ import { MinecraftButton } from "@/components/ui/minecraft-button";
 import { StatusDot } from "@/components/ui/status-dot";
 import { BotCard } from "@/components/bot-card";
 import { LogViewer } from "@/components/log-viewer";
-import { ServerConfig as ServerConfigComponent } from "@/components/server-config";
+import { ServerConfigComponent } from "@/components/server-config";
 import { AiChat } from "@/components/ai-chat";
 
 // Icons
@@ -716,7 +716,7 @@ export default function AdminDashboard() {
                     </MinecraftButton>
                     <MinecraftButton
                       variant="primary"
-                      onClick={() => spawnBotMutation.mutate()}
+                      onClick={() => spawnBotMutation.mutate(undefined)}
                       disabled={spawnBotMutation.isPending}
                       data-testid="button-spawn-single-bot"
                     >

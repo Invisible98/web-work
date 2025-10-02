@@ -3,6 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { MinecraftButton } from "@/components/ui/minecraft-button";
 import { StatusDot } from "@/components/ui/status-dot";
 import { Trash2, Plug, Power } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface BotCardProps {
   bot: Bot;

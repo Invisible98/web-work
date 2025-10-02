@@ -105,8 +105,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const bots = await botManager.getAllBots();
       res.json(bots);
-    } catch (error) {
-      res.status(500).json({ message: error.message });
+    } catch (error: any) {
+      res.status(500).json({ message: error?.message || 'Unknown error' });
     }
   });
 
@@ -118,8 +118,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { name } = req.body;
       const bot = await botManager.spawnBot(name);
       res.status(201).json(bot);
-    } catch (error) {
-      res.status(400).json({ message: error.message });
+    } catch (error: any) {
+      res.status(400).json({ message: error?.message || 'Unknown error' });
     }
   });
 
@@ -131,8 +131,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { count = 10 } = req.body;
       const bots = await botManager.spawnMultipleBots(count);
       res.json(bots);
-    } catch (error) {
-      res.status(500).json({ message: error.message });
+    } catch (error: any) {
+      res.status(500).json({ message: error?.message || 'Unknown error' });
     }
   });
 
@@ -143,8 +143,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       await botManager.connectBot(req.params.id);
       res.sendStatus(200);
-    } catch (error) {
-      res.status(500).json({ message: error.message });
+    } catch (error: any) {
+      res.status(500).json({ message: error?.message || 'Unknown error' });
     }
   });
 
@@ -155,8 +155,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       await botManager.disconnectBot(req.params.id);
       res.sendStatus(200);
-    } catch (error) {
-      res.status(500).json({ message: error.message });
+    } catch (error: any) {
+      res.status(500).json({ message: error?.message || 'Unknown error' });
     }
   });
 
@@ -167,8 +167,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       await botManager.deleteBot(req.params.id);
       res.sendStatus(200);
-    } catch (error) {
-      res.status(500).json({ message: error.message });
+    } catch (error: any) {
+      res.status(500).json({ message: error?.message || 'Unknown error' });
     }
   });
 
@@ -179,8 +179,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       await botManager.connectAllBots();
       res.sendStatus(200);
-    } catch (error) {
-      res.status(500).json({ message: error.message });
+    } catch (error: any) {
+      res.status(500).json({ message: error?.message || 'Unknown error' });
     }
   });
 
@@ -191,8 +191,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       await botManager.disconnectAllBots();
       res.sendStatus(200);
-    } catch (error) {
-      res.status(500).json({ message: error.message });
+    } catch (error: any) {
+      res.status(500).json({ message: error?.message || 'Unknown error' });
     }
   });
 
@@ -205,11 +205,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const action = botActionSchema.parse(req.body);
       await botManager.executeAction(action);
       res.sendStatus(200);
-    } catch (error) {
+    } catch (error: any) {
       if (error instanceof z.ZodError) {
         res.status(400).json({ message: "Invalid action format", errors: error.errors });
       } else {
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ message: error?.message || 'Unknown error' });
       }
     }
   });
@@ -222,8 +222,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const config = await storage.getServerConfig();
       res.json(config);
-    } catch (error) {
-      res.status(500).json({ message: error.message });
+    } catch (error: any) {
+      res.status(500).json({ message: error?.message || 'Unknown error' });
     }
   });
 
@@ -237,11 +237,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       await botManager.updateServerConfig(config);
       wsManager.broadcastServerConfigUpdate(config);
       res.json(config);
-    } catch (error) {
+    } catch (error: any) {
       if (error instanceof z.ZodError) {
         res.status(400).json({ message: "Invalid config format", errors: error.errors });
       } else {
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ message: error?.message || 'Unknown error' });
       }
     }
   });
@@ -253,8 +253,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const stats = await botManager.getServerStats();
       res.json(stats);
-    } catch (error) {
-      res.status(500).json({ message: error.message });
+    } catch (error: any) {
+      res.status(500).json({ message: error?.message || 'Unknown error' });
     }
   });
 
@@ -266,8 +266,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const limit = req.query.limit ? parseInt(req.query.limit as string) : 100;
       const logs = await storage.getLogs(limit);
       res.json(logs);
-    } catch (error) {
-      res.status(500).json({ message: error.message });
+    } catch (error: any) {
+      res.status(500).json({ message: error?.message || 'Unknown error' });
     }
   });
 
@@ -278,8 +278,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       await storage.clearLogs();
       res.sendStatus(200);
-    } catch (error) {
-      res.status(500).json({ message: error.message });
+    } catch (error: any) {
+      res.status(500).json({ message: error?.message || 'Unknown error' });
     }
   });
 
@@ -291,8 +291,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const limit = req.query.limit ? parseInt(req.query.limit as string) : 50;
       const messages = await storage.getChatMessages(limit);
       res.json(messages);
-    } catch (error) {
-      res.status(500).json({ message: error.message });
+    } catch (error: any) {
+      res.status(500).json({ message: error?.message || 'Unknown error' });
     }
   });
 
@@ -304,8 +304,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const config = await storage.getAiConfig();
       res.json(config);
-    } catch (error) {
-      res.status(500).json({ message: error.message });
+    } catch (error: any) {
+      res.status(500).json({ message: error?.message || 'Unknown error' });
     }
   });
 
@@ -318,11 +318,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const config = await storage.updateAiConfig(configData);
       wsManager.broadcastAiConfigUpdate(config);
       res.json(config);
-    } catch (error) {
+    } catch (error: any) {
       if (error instanceof z.ZodError) {
         res.status(400).json({ message: "Invalid AI config format", errors: error.errors });
       } else {
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ message: error?.message || 'Unknown error' });
       }
     }
   });

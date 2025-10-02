@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ServerConfig, InsertServerConfig } from "@shared/schema";
+import { ServerConfig as ServerConfigType, InsertServerConfig } from "@shared/schema";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -9,14 +9,14 @@ import { StatusDot } from "@/components/ui/status-dot";
 import { Server, Network, Key, Save, TestTube } from "lucide-react";
 
 interface ServerConfigProps {
-  config: ServerConfig;
+  config: ServerConfigType;
   onSave: (config: InsertServerConfig) => void;
   onTest?: () => void;
   isSaving?: boolean;
   isTesting?: boolean;
 }
 
-export function ServerConfig({ config, onSave, onTest, isSaving = false, isTesting = false }: ServerConfigProps) {
+export function ServerConfigComponent({ config, onSave, onTest, isSaving = false, isTesting = false }: ServerConfigProps) {
   const [formData, setFormData] = useState<InsertServerConfig>({
     ip: config.ip,
     port: config.port,

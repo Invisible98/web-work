@@ -65,10 +65,9 @@ export const aiConfig = pgTable("ai_config", {
 });
 
 // Insert schemas
-export const insertUserSchema = createInsertSchema(users).pick({
-  username: true,
-  password: true,
-  role: true,
+export const insertUserSchema = createInsertSchema(users).omit({
+  id: true,
+  createdAt: true,
 });
 
 export const insertServerConfigSchema = createInsertSchema(serverConfig).omit({
