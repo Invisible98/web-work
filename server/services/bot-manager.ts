@@ -24,7 +24,7 @@ export class BotManager extends EventEmitter {
 
   private async initialize() {
     this.serverConfig = await storage.getServerConfig();
-    
+
     // Load existing bots from storage
     const existingBots = await storage.getAllBots();
     for (const bot of existingBots) {
@@ -45,7 +45,7 @@ export class BotManager extends EventEmitter {
 
   async spawnBot(customName?: string): Promise<Bot> {
     const name = customName || `CraftBot_${Math.floor(Math.random() * 10000)}`;
-    
+
     // Check if bot name already exists
     const existing = await storage.getBotByName(name);
     if (existing) {
@@ -62,25 +62,25 @@ export class BotManager extends EventEmitter {
     };
 
     const bot = await storage.createBot(botData);
-    
+
     const botInstance: BotInstance = {
       id: bot.id,
       bot: null,
       isConnecting: false,
       uptime: new Date(),
     };
-    
+
     this.bots.set(bot.id, botInstance);
-    
+
     this.emit('bot-created', bot);
     await this.addLog('success', `Bot ${name} created`);
-    
+
     return bot;
   }
 
   async spawnMultipleBots(count: number): Promise<Bot[]> {
     const bots: Bot[] = [];
-    
+
     for (let i = 0; i < count; i++) {
       try {
         const bot = await this.spawnBot();
@@ -89,7 +89,7 @@ export class BotManager extends EventEmitter {
         await this.addLog('error', `Failed to spawn bot ${i + 1}: ${error?.message || 'Unknown error'}`);
       }
     }
-    
+
     return bots;
   }
 
@@ -105,7 +105,7 @@ export class BotManager extends EventEmitter {
 
     botInstance.isConnecting = true;
     await storage.updateBot(botId, { status: 'connecting' });
-    
+
     const botData = await storage.getBot(botId);
     if (!botData) return;
 
@@ -125,14 +125,14 @@ export class BotManager extends EventEmitter {
       botInstance.uptime = new Date();
 
       this.setupBotEventHandlers(botId, bot);
-      
+
       await this.addLog('info', `${botData.name} connecting to ${this.serverConfig.ip}:${this.serverConfig.port}`);
-      
+
     } catch (error: any) {
       botInstance.isConnecting = false;
       await storage.updateBot(botId, { status: 'offline' });
       await this.addLog('error', `Failed to connect ${botData.name}: ${error?.message || 'Unknown error'}`);
-      
+
       if (this.serverConfig.autoReconnect) {
         this.scheduleReconnect(botId);
       }
@@ -146,7 +146,7 @@ export class BotManager extends EventEmitter {
     bot.on('spawn', async () => {
       botInstance.isConnecting = false;
       const position = bot.entity?.position;
-      
+
       await storage.updateBot(botId, {
         status: 'online',
         health: bot.health,
@@ -156,7 +156,7 @@ export class BotManager extends EventEmitter {
 
       const botData = await storage.getBot(botId);
       await this.addLog('success', `${botData?.name} connected and spawned`);
-      
+
       // Auto login/register
       if (botData) {
         setTimeout(async () => {
@@ -165,7 +165,7 @@ export class BotManager extends EventEmitter {
               bot.chat(`/login ${this.serverConfig.password}`);
               await this.addLog('info', `${botData.name} executing /login`);
             } else {
-              bot.chat(`/register ${this.serverConfig.password}`);
+              bot.chat(`/register ${this.serverConfig.password} ${this.serverConfig.password}`);
               await this.addLog('info', `${botData.name} executing /register`);
               await storage.updateBot(botId, { isRegistered: true });
             }
@@ -174,7 +174,7 @@ export class BotManager extends EventEmitter {
           }
         }, 1000);
       }
-      
+
       this.emit('bot-connected', botId);
     });
 
@@ -194,7 +194,7 @@ export class BotManager extends EventEmitter {
     bot.on('chat', async (username, message) => {
       try {
         if (username === bot.username) return; // Ignore own messages
-        
+
         // Store chat message
         await storage.addChatMessage({
           username,
@@ -231,7 +231,7 @@ export class BotManager extends EventEmitter {
 
     botInstance.bot = null;
     botInstance.isConnecting = false;
-    
+
     // Clear timers
     if (botInstance.reconnectTimer) {
       clearTimeout(botInstance.reconnectTimer);
@@ -289,18 +289,18 @@ export class BotManager extends EventEmitter {
 
   async deleteBot(botId: string): Promise<void> {
     await this.disconnectBot(botId);
-    
+
     const botData = await storage.getBot(botId);
     await storage.deleteBot(botId);
     this.bots.delete(botId);
-    
+
     await this.addLog('info', `Bot ${botData?.name} deleted`);
     this.emit('bot-deleted', botId);
   }
 
   async executeAction(action: BotAction): Promise<void> {
-    const targetBots = action.botIds?.length 
-      ? action.botIds 
+    const targetBots = action.botIds?.length
+      ? action.botIds
       : Array.from(this.bots.keys());
 
     for (const botId of targetBots) {
@@ -311,7 +311,7 @@ export class BotManager extends EventEmitter {
   private async executeBotAction(botId: string, action: BotAction): Promise<void> {
     const botInstance = this.bots.get(botId);
     const botData = await storage.getBot(botId);
-    
+
     if (!botInstance?.bot || !botData) {
       await this.addLog('warning', `Cannot execute action on ${botData?.name || botId}: bot not connected`);
       return;
@@ -428,7 +428,7 @@ export class BotManager extends EventEmitter {
 
   private async sendChat(bot: MineflayerBot, message: string): Promise<void> {
     bot.chat(message);
-    
+
     // Store the sent message
     await storage.addChatMessage({
       username: bot.username,
@@ -440,7 +440,7 @@ export class BotManager extends EventEmitter {
 
   async connectAllBots(): Promise<void> {
     const allBots = await storage.getAllBots();
-    
+
     for (const bot of allBots) {
       try {
         await this.connectBot(bot.id);
@@ -452,7 +452,7 @@ export class BotManager extends EventEmitter {
 
   async disconnectAllBots(): Promise<void> {
     const botIds = Array.from(this.bots.keys());
-    
+
     for (const botId of botIds) {
       await this.disconnectBot(botId);
     }
@@ -460,7 +460,7 @@ export class BotManager extends EventEmitter {
 
   async reconnectAllBots(): Promise<void> {
     await this.disconnectAllBots();
-    
+
     // Wait a moment before reconnecting
     setTimeout(() => {
       this.connectAllBots();
@@ -470,10 +470,10 @@ export class BotManager extends EventEmitter {
   async getServerStats() {
     const allBots = await storage.getAllBots();
     const onlineBots = allBots.filter(bot => bot.status === 'online');
-    
+
     const totalHealth = onlineBots.reduce((sum, bot) => sum + (bot.health || 0), 0);
     const avgHealth = onlineBots.length > 0 ? totalHealth / onlineBots.length : 0;
-    
+
     // Calculate average uptime in hours
     const now = new Date();
     const totalUptime = Array.from(this.bots.values()).reduce((sum, instance) => {
