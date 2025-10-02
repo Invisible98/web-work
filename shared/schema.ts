@@ -30,6 +30,7 @@ export const bots = pgTable("minecraft_bots", {
   position: jsonb("position").$type<{ x: number; y: number; z: number }>(),
   currentAction: text("current_action").default("idle"),
   uptime: integer("uptime").default(0), // seconds
+  isRegistered: boolean("is_registered").notNull().default(false),
   lastSeen: timestamp("last_seen").defaultNow(),
   createdAt: timestamp("created_at").defaultNow(),
 });

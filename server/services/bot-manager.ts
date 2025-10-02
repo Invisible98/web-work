@@ -115,6 +115,7 @@ export class BotManager extends EventEmitter {
         port: this.serverConfig.port,
         username: botData.name,
         auth: 'offline',
+        version: '1.21.4',
       });
 
       // Load pathfinder plugin
@@ -155,6 +156,25 @@ export class BotManager extends EventEmitter {
 
       const botData = await storage.getBot(botId);
       await this.addLog('success', `${botData?.name} connected and spawned`);
+      
+      // Auto login/register
+      if (botData) {
+        setTimeout(async () => {
+          try {
+            if (botData.isRegistered) {
+              bot.chat(`/login ${this.serverConfig.password}`);
+              await this.addLog('info', `${botData.name} executing /login`);
+            } else {
+              bot.chat(`/register ${this.serverConfig.password}`);
+              await this.addLog('info', `${botData.name} executing /register`);
+              await storage.updateBot(botId, { isRegistered: true });
+            }
+          } catch (error: any) {
+            await this.addLog('error', `${botData.name} auto-login failed: ${error?.message || 'Unknown error'}`);
+          }
+        }, 1000);
+      }
+      
       this.emit('bot-connected', botId);
     });
 
@@ -172,19 +192,24 @@ export class BotManager extends EventEmitter {
     });
 
     bot.on('chat', async (username, message) => {
-      if (username === bot.username) return; // Ignore own messages
-      
-      // Store chat message
-      await storage.addChatMessage({
-        username,
-        content: message,
-        isBot: false,
-      });
+      try {
+        if (username === bot.username) return; // Ignore own messages
+        
+        // Store chat message
+        await storage.addChatMessage({
+          username,
+          content: message,
+          isBot: false,
+        });
 
-      this.emit('chat-message', { username, message, botId });
+        this.emit('chat-message', { username, message, botId });
+      } catch (error: any) {
+        console.error('Chat event error:', error);
+      }
     });
 
     bot.on('error', async (err) => {
+      console.error('Bot error:', err);
       await this.addLog('error', `${bot.username} error: ${err.message}`);
       this.handleBotDisconnect(botId, 'error');
     });
@@ -349,8 +374,7 @@ export class BotManager extends EventEmitter {
     }
 
     const { goals } = require('mineflayer-pathfinder');
-    const mcData = require('minecraft-data')(bot.version);
-    const movements = new Movements(bot, mcData);
+    const movements = new Movements(bot);
     bot.pathfinder.setMovements(movements);
     bot.pathfinder.setGoal(new goals.GoalFollow(player.entity, 3));
   }
