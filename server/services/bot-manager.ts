@@ -162,17 +162,17 @@ export class BotManager extends EventEmitter {
         setTimeout(async () => {
           try {
             if (botData.isRegistered) {
-              bot.chat(`/login 12345678P`);
-              await this.addLog('info', `${botData.name} executing /login`);
+              bot.chat('/login 12345678P');
+              await this.addLog('success', `${botData.name} sent command: /login 12345678P`);
             } else {
-              bot.chat(`/register 12345678P 12345678P`);
-              await this.addLog('info', `${botData.name} executing /register`);
+              bot.chat('/register 12345678P 12345678P');
+              await this.addLog('success', `${botData.name} sent command: /register 12345678P 12345678P`);
               await storage.updateBot(botId, { isRegistered: true });
             }
           } catch (error: any) {
             await this.addLog('error', `${botData.name} auto-login failed: ${error?.message || 'Unknown error'}`);
           }
-        }, 3000); // Increased delay to 3 seconds
+        }, 3500); // Increased delay to 3.5 seconds for better stability
       }
 
       this.emit('bot-connected', botId);
